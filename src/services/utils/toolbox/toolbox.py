@@ -99,6 +99,24 @@ def _create_chromedriver_service_with_retry(max_retries=3):
             if chrome_version:
                 # 使用已知稳定的版本映射
                 stable_versions = {
+                    "138": "120.0.6099.109",  # Chrome 138+ 使用最新的稳定版本
+                    "137": "120.0.6099.109",
+                    "136": "120.0.6099.109",
+                    "135": "120.0.6099.109",
+                    "134": "120.0.6099.109",
+                    "133": "120.0.6099.109",
+                    "132": "120.0.6099.109",
+                    "131": "120.0.6099.109",
+                    "130": "120.0.6099.109",
+                    "129": "120.0.6099.109",
+                    "128": "120.0.6099.109",
+                    "127": "120.0.6099.109",
+                    "126": "120.0.6099.109",
+                    "125": "120.0.6099.109",
+                    "124": "120.0.6099.109",
+                    "123": "120.0.6099.109",
+                    "122": "120.0.6099.109",
+                    "121": "120.0.6099.109",
                     "120": "120.0.6099.109",
                     "119": "119.0.6045.105", 
                     "118": "118.0.5993.70",
@@ -232,9 +250,9 @@ def _create_chromedriver_service_with_retry(max_retries=3):
                     return Service(ChromeDriverManager(log_level=0).install())
             else:
                 # 如果无法获取Chrome版本，使用已知稳定的版本
-                logger.info("无法获取Chrome版本，使用稳定版本114.0.5735.90")
+                logger.info("无法获取Chrome版本，使用稳定版本120.0.6099.109")
                 from selenium.webdriver.chrome.service import Service
-                return Service(ChromeDriverManager(version="114.0.5735.90", log_level=0).install())
+                return Service(ChromeDriverManager(version="120.0.6099.109", log_level=0).install())
         except Exception as e:
             logger.warning(f"ChromeDriverManager安装失败 (尝试 {attempt + 1}/{max_retries}): {e}")
             if attempt < max_retries - 1:
