@@ -11,9 +11,12 @@ import random
 from typing import List, Dict, Optional
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from loguru import logger
+import os
+import json
 
 class ProxyCollector:
     """代理搜集器"""
+    BLACKLIST_FILE = "blacklist_sites.txt"
     
     def __init__(self):
         self.proxies = []
@@ -272,11 +275,76 @@ class ProxyCollector:
                     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
                     'Accept': 'text/plain',
                 }
-            }
+            },
+            {
+                'name': 'Kuaidaili',
+                'url': 'https://www.kuaidaili.com/free/fps/',
+                'pattern': r'(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}):(\d+)',
+                'headers': {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+                }
+            },
+            {
+                'name': 'IP3366',
+                'url': 'http://www.ip3366.net/free/?stype=1&page=1',
+                'pattern': r'(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}):(\d+)',
+                'headers': {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+                }
+            },
+            {
+                'name': 'IPFoxy',
+                'url': 'https://www.ipfoxy.com/',
+                'pattern': r'(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}):(\d+)',
+                'headers': {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+                }
+            },
+            {
+                'name': 'IPIdea',
+                'url': 'https://www.ipidea.net/',
+                'pattern': r'(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}):(\d+)',
+                'headers': {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+                }
+            },
+            {
+                'name': 'IPXProxy',
+                'url': 'https://www.ipxproxy.com/',
+                'pattern': r'(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}):(\d+)',
+                'headers': {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+                }
+            },
         ]
+        self.site_fail_count = {}
+        self.site_blacklist = set()
+        self.FAIL_THRESHOLD = 3
+        self.POOL_FAIL_RATE = 0.99
+        self.load_blacklist()
     
+    def load_blacklist(self):
+        if os.path.exists(self.BLACKLIST_FILE):
+            try:
+                with open(self.BLACKLIST_FILE, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                    self.site_blacklist = set(data)
+                logger.info(f"已加载黑名单: {self.site_blacklist}")
+            except Exception as e:
+                logger.warning(f"加载黑名单失败: {e}")
+
+    def save_blacklist(self):
+        try:
+            with open(self.BLACKLIST_FILE, 'w', encoding='utf-8') as f:
+                json.dump(list(self.site_blacklist), f, ensure_ascii=False, indent=2)
+            logger.info(f"已保存黑名单: {self.site_blacklist}")
+        except Exception as e:
+            logger.warning(f"保存黑名单失败: {e}")
+
     def fetch_proxies_from_source(self, source: Dict) -> List[str]:
-        """从单个代理源获取代理列表"""
+        if source['name'] in self.site_blacklist:
+            logger.warning(f"{source['name']} 已被拉黑，跳过采集")
+            return []
         try:
             logger.info(f"正在从 {source['name']} 获取代理...")
             
@@ -339,13 +407,31 @@ class ProxyCollector:
                                 valid_proxies.append(proxy)
                 
                 logger.info(f"从 {source['name']} 获取到 {len(valid_proxies)} 个有效代理")
+                if len(valid_proxies) == 0:
+                    self.site_fail_count[source['name']] = self.site_fail_count.get(source['name'], 0) + 1
+                    if self.site_fail_count[source['name']] >= self.FAIL_THRESHOLD:
+                        self.site_blacklist.add(source['name'])
+                        self.save_blacklist()
+                        logger.warning(f"{source['name']} 采集失败次数过多，已加入黑名单")
+                else:
+                    self.site_fail_count[source['name']] = 0
                 return valid_proxies
             else:
                 logger.warning(f"从 {source['name']} 获取代理失败，状态码: {response.status_code}")
+                self.site_fail_count[source['name']] = self.site_fail_count.get(source['name'], 0) + 1
+                if self.site_fail_count[source['name']] >= self.FAIL_THRESHOLD:
+                    self.site_blacklist.add(source['name'])
+                    self.save_blacklist()
+                    logger.warning(f"{source['name']} 采集失败次数过多，已加入黑名单")
                 return []
                 
         except Exception as e:
             logger.error(f"从 {source['name']} 获取代理时出错: {e}")
+            self.site_fail_count[source['name']] = self.site_fail_count.get(source['name'], 0) + 1
+            if self.site_fail_count[source['name']] >= self.FAIL_THRESHOLD:
+                self.site_blacklist.add(source['name'])
+                self.save_blacklist()
+                logger.warning(f"{source['name']} 采集失败次数过多，已加入黑名单")
             return []
     
     def test_proxy(self, proxy: str) -> Optional[Dict]:
@@ -393,6 +479,19 @@ class ProxyCollector:
                 try:
                     proxies = future.result()
                     self.proxies.extend(proxies)
+                    # 统计代理池成功率
+                    if proxies is not None and len(proxies) > 0:
+                        tested = 0
+                        success = 0
+                        for proxy in proxies:
+                            result = self.test_proxy(proxy)
+                            tested += 1
+                            if result:
+                                success += 1
+                        if tested > 0 and (1 - success / tested) >= self.POOL_FAIL_RATE:
+                            self.site_blacklist.add(source['name'])
+                            self.save_blacklist()
+                            logger.warning(f"{source['name']} 代理池99%失败，已禁用")
                 except Exception as e:
                     logger.error(f"从 {source['name']} 获取代理时出错: {e}")
         
