@@ -182,6 +182,14 @@ jobs:
         echo "ChromeDriver version:"
         chromedriver --version
         
+        # 验证ChromeDriver是否在PATH中
+        echo "Checking ChromeDriver in PATH:"
+        which chromedriver
+        
+        # 验证ChromeDriver是否可执行
+        echo "Checking ChromeDriver executable:"
+        ls -la /usr/local/bin/chromedriver
+        
         # 设置环境变量
         echo "CHROME_DRIVER_PATH=/usr/local/bin/chromedriver" >> $GITHUB_ENV
         
