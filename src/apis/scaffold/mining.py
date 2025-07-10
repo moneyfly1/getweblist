@@ -135,23 +135,54 @@ class V2RSSMiningToolkit:
         path_output_template = os.path.join(
             dir_output,
             "mining_{}".format(
-                str(datetime.now(TIME_ZONE_CN)).split(".")[0].replace(":", "-")
+                datetime.now(TIME_ZONE_CN).strftime('%Y-%m-%d_%H-%M-%S')
             )
         )
         path_output_ = f"{path_output_template}.csv" if path_output is None else path_output
 
         docker = sorted(docker, key=lambda x: x["label"])
+        
+        # 添加文件保护机制
+        backup_dir = os.path.join(dir_output, "backup")
+        if not os.path.exists(backup_dir):
+            os.makedirs(backup_dir)
+        
         try:
             with open(path_output_, "w", encoding="utf8", newline="") as f:
                 writer = csv.writer(f)
                 writer.writerow(["url", "label"])
                 for context in docker:
                     writer.writerow([context["url"], context["label"]])
+            
+            # 创建备份文件
+            backup_filename = os.path.basename(path_output_)
+            backup_path = os.path.join(backup_dir, backup_filename)
+            import shutil
+            shutil.copy2(path_output_, backup_path)
+            
+            logger.success(f"数据已保存到: {path_output_}")
+            logger.info(f"备份文件已创建: {backup_path}")
+            
             return path_output_
         except PermissionError:
             logger.warning(f"导出文件被占用 - file={path_output_}")
             path_output_ = f"{path_output_template}.{random.randint(1, 10)}.csv"
             return V2RSSMiningToolkit.output_cleaning_dataset(dir_output, docker, path_output=path_output_)
+        except Exception as e:
+            logger.error(f"保存文件时出错: {e}")
+            # 尝试保存到备用位置
+            fallback_path = os.path.join(backup_dir, f"mining_{datetime.now(TIME_ZONE_CN).strftime('%Y-%m-%d_%H-%M-%S')}.csv")
+            try:
+                with open(fallback_path, "w", encoding="utf8", newline="") as f:
+                    writer = csv.writer(f)
+                    writer.writerow(["url", "label"])
+                    for context in docker:
+                        writer.writerow([context["url"], context["label"]])
+                logger.success(f"数据已保存到备用位置: {fallback_path}")
+                return fallback_path
+            except Exception as e2:
+                logger.error(f"保存到备用位置也失败: {e2}")
+                return ""
 
     @staticmethod
     def preview(path_output: str, docker: Optional[list] = None):
