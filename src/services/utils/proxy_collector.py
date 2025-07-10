@@ -501,31 +501,29 @@ class ProxyCollector:
         
         return self.proxies
     
-    def test_proxies(self, max_workers: int = 10) -> List[Dict]:
-        """测试所有代理的可用性"""
+    def test_proxies(self, max_workers: int = 10, max_valid: int = 15) -> List[Dict]:
+        """测试所有代理的可用性，找到 max_valid 个有效代理后立即停止"""
         logger.info("开始测试代理可用性...")
-        
         working_proxies = []
-        
         with ThreadPoolExecutor(max_workers=max_workers) as executor:
             future_to_proxy = {
                 executor.submit(self.test_proxy, proxy): proxy 
                 for proxy in self.proxies
             }
-            
             for future in as_completed(future_to_proxy):
                 proxy = future_to_proxy[future]
                 try:
                     result = future.result()
                     if result:
                         working_proxies.append(result)
+                        if len(working_proxies) >= max_valid:
+                            logger.info(f"已找到 {max_valid} 个有效代理，停止进一步测试")
+                            break
                 except Exception as e:
                     logger.debug(f"测试代理 {proxy} 时出错: {e}")
-        
         # 按速度排序
         working_proxies.sort(key=lambda x: x['speed'])
         self.working_proxies = working_proxies
-        
         logger.info(f"找到 {len(working_proxies)} 个可用代理")
         return working_proxies
     
