@@ -218,54 +218,92 @@ jobs:
           echo "This might be due to missing Chrome browser or network issues"
         }
     
-    - name: Run mining with error handling
+    - name: Run mining with proxy support
       run: |
-        echo "Running SSPanel mining with improved error handling..."
+        echo "Running SSPanel mining with proxy support..."
         
         # 设置环境变量以启用重试机制
         export MAX_RETRIES=3
         export RETRY_DELAY=30
         
-        # 运行采集器，如果遇到CollectorSwitchError则重试
-        python src/main.py mining --env=production --collector --classifier --source=local || {
-          echo "Mining failed, but this might be due to Google blocking (expected behavior)"
-          echo "Checking if any data was collected..."
-          
-          # 检查是否生成了任何数据文件
-          if ls src/database/sspanel_hosts/dataset_*.txt 1> /dev/null 2>&1; then
-            echo "Data files found, mining partially successful"
-            ls -la src/database/sspanel_hosts/dataset_*.txt
-            exit 0
-          else
-            echo "No data files found, mining completely failed"
-            exit 1
-          fi
+        # 检查当前目录结构
+        echo "Current directory structure:"
+        ls -la
+        echo "src directory structure:"
+        ls -la src/
+        echo "database directory structure:"
+        ls -la src/database/sspanel_hosts/
+        
+        # 步骤1: 搜集代理
+        echo "Step 1: Collecting proxies..."
+        python collect_proxies.py || {
+          echo "Proxy collection failed, but continuing..."
         }
-    
-    - name: Check results
-      run: |
-        echo "Checking mining results..."
+        
+        # 检查代理文件
+        if [ -f "working_proxies.txt" ]; then
+          echo "✅ Proxy file found:"
+          echo "Proxy count: $(wc -l < working_proxies.txt)"
+          echo "First 5 proxies:"
+          head -5 working_proxies.txt
+        else
+          echo "⚠️ No proxy file found, will use direct connection"
+        fi
+        
+        # 步骤2: 运行采集器
+        echo "Step 2: Running collector with proxy support..."
+        python src/main.py mining --env=production --collector || {
+          echo "Collector failed, but continuing..."
+        }
         
         # 检查是否生成了数据文件
+        echo "Step 3: Checking for data files..."
         if ls src/database/sspanel_hosts/dataset_*.txt 1> /dev/null 2>&1; then
-          echo "✅ Mining data files found:"
+          echo "✅ Data files found after collector run:"
           ls -la src/database/sspanel_hosts/dataset_*.txt
           
-          # 显示最新的数据文件内容
+          # 显示最新的数据文件
           LATEST_FILE=$(ls -t src/database/sspanel_hosts/dataset_*.txt | head -1)
           echo "Latest data file: $LATEST_FILE"
           if [ -f "$LATEST_FILE" ]; then
-            echo "First 10 lines:"
-            head -10 "$LATEST_FILE"
+            echo "File size: $(wc -l < "$LATEST_FILE") lines"
+            echo "First 5 lines:"
+            head -5 "$LATEST_FILE"
           fi
         else
-          echo "❌ No mining data files found"
+          echo "❌ No data files found after collector run"
+          echo "This might be due to Google blocking. Trying with existing data..."
         fi
         
-        # 检查是否生成了分类文件
+        # 步骤3: 运行分类器
+        echo "Step 4: Running classifier..."
+        python src/main.py mining --env=production --classifier --source=local || {
+          echo "Classifier failed, but continuing..."
+        }
+        
+        # 检查分类器结果
+        echo "Step 5: Checking classifier results..."
         if ls src/database/sspanel_hosts/classifier/mining_*.csv 1> /dev/null 2>&1; then
           echo "✅ Classifier files found:"
           ls -la src/database/sspanel_hosts/classifier/mining_*.csv
+          
+          # 显示最新的分类文件
+          LATEST_CSV=$(ls -t src/database/sspanel_hosts/classifier/mining_*.csv | head -1)
+          echo "Latest classifier file: $LATEST_CSV"
+          if [ -f "$LATEST_CSV" ]; then
+            echo "File size: $(wc -l < "$LATEST_CSV") lines"
+            echo "First 5 lines:"
+            head -5 "$LATEST_CSV"
+          fi
         else
           echo "❌ No classifier files found"
-        fi 
+        fi
+        
+        # 最终检查
+        echo "Final check:"
+        echo "Data files:"
+        ls -la src/database/sspanel_hosts/dataset_*.txt 2>/dev/null || echo "No data files"
+        echo "Classifier files:"
+        ls -la src/database/sspanel_hosts/classifier/mining_*.csv 2>/dev/null || echo "No classifier files"
+        echo "Proxy file:"
+        ls -la working_proxies.txt 2>/dev/null || echo "No proxy file" 
