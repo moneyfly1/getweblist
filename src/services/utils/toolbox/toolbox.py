@@ -6,6 +6,7 @@
 import sys
 import os
 import subprocess
+import time
 from typing import Optional
 
 from loguru import logger
@@ -89,42 +90,9 @@ def _get_chrome_version():
     return None
 
 
-def get_ctx(silence: Optional[bool] = None):
-    from selenium.webdriver.chrome.service import Service
-    from selenium.webdriver import Chrome
-
-    silence = True if silence is None or "linux" in sys.platform else silence
-
-    options = _set_ctx()
-    if silence is True:
-        options.add_argument("--headless")
-        options.add_argument("--disable-gpu")
-        options.add_argument("--disable-software-rasterizer")
-    options.add_argument('--user-agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
-                         '(KHTML, like Gecko) Chrome/97.0.4692.71 Safari/537.36"')
-    
-    # 改进的ChromeDriver管理，解决GitHub Actions兼容性问题
-    service = None
-    
-    # 方案1: 使用环境变量指定的ChromeDriver
-    chrome_driver_path = os.environ.get('CHROME_DRIVER_PATH')
-    if chrome_driver_path and os.path.exists(chrome_driver_path):
-        logger.info(f"使用环境变量指定的ChromeDriver: {chrome_driver_path}")
-        service = Service(chrome_driver_path)
-    
-    # 方案2: 尝试使用系统ChromeDriver
-    if service is None:
-        try:
-            # 检查系统是否有chromedriver
-            result = subprocess.run(['which', 'chromedriver'], capture_output=True)
-            if result.returncode == 0:
-                logger.info("使用系统ChromeDriver")
-                service = Service("chromedriver")
-        except Exception as e:
-            logger.warning(f"系统ChromeDriver检查失败: {e}")
-    
-    # 方案3: 使用webdriver_manager，但指定稳定版本
-    if service is None:
+def _create_chromedriver_service_with_retry(max_retries=3):
+    """创建ChromeDriver服务，带重试机制"""
+    for attempt in range(max_retries):
         try:
             # 获取Chrome版本并尝试匹配
             chrome_version = _get_chrome_version()
@@ -256,23 +224,69 @@ def get_ctx(silence: Optional[bool] = None):
                 if chrome_version in stable_versions:
                     driver_version = stable_versions[chrome_version]
                     logger.info(f"Chrome版本 {chrome_version}，使用ChromeDriver版本 {driver_version}")
-                    service = Service(ChromeDriverManager(version=driver_version, log_level=0).install())
+                    from selenium.webdriver.chrome.service import Service
+                    return Service(ChromeDriverManager(version=driver_version, log_level=0).install())
                 else:
                     logger.warning(f"Chrome版本 {chrome_version} 不在稳定版本映射中，尝试使用默认版本")
-                    service = Service(ChromeDriverManager(log_level=0).install())
+                    from selenium.webdriver.chrome.service import Service
+                    return Service(ChromeDriverManager(log_level=0).install())
             else:
                 # 如果无法获取Chrome版本，使用已知稳定的版本
                 logger.info("无法获取Chrome版本，使用稳定版本114.0.5735.90")
-                service = Service(ChromeDriverManager(version="114.0.5735.90", log_level=0).install())
+                from selenium.webdriver.chrome.service import Service
+                return Service(ChromeDriverManager(version="114.0.5735.90", log_level=0).install())
         except Exception as e:
-            logger.warning(f"ChromeDriverManager安装失败: {e}")
-            # 最后的备用方案：尝试不指定版本
-            try:
-                service = Service(ChromeDriverManager(log_level=0).install())
-                logger.info("使用默认版本ChromeDriver")
-            except Exception as e2:
-                logger.error(f"ChromeDriver安装完全失败: {e2}")
-                raise RuntimeError("无法初始化ChromeDriver，请检查Chrome浏览器安装和网络连接")
+            logger.warning(f"ChromeDriverManager安装失败 (尝试 {attempt + 1}/{max_retries}): {e}")
+            if attempt < max_retries - 1:
+                time.sleep(2)  # 等待2秒后重试
+            else:
+                raise
+    
+    # 如果所有重试都失败，抛出异常
+    raise RuntimeError("ChromeDriverManager安装失败，已尝试所有重试")
+
+
+def get_ctx(silence: Optional[bool] = None):
+    from selenium.webdriver.chrome.service import Service
+    from selenium.webdriver import Chrome
+
+    silence = True if silence is None or "linux" in sys.platform else silence
+
+    options = _set_ctx()
+    if silence is True:
+        options.add_argument("--headless")
+        options.add_argument("--disable-gpu")
+        options.add_argument("--disable-software-rasterizer")
+    options.add_argument('--user-agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
+                         '(KHTML, like Gecko) Chrome/97.0.4692.71 Safari/537.36"')
+    
+    # 改进的ChromeDriver管理，解决GitHub Actions兼容性问题
+    service = None
+    
+    # 方案1: 使用环境变量指定的ChromeDriver
+    chrome_driver_path = os.environ.get('CHROME_DRIVER_PATH')
+    if chrome_driver_path and os.path.exists(chrome_driver_path):
+        logger.info(f"使用环境变量指定的ChromeDriver: {chrome_driver_path}")
+        service = Service(chrome_driver_path)
+    
+    # 方案2: 尝试使用系统ChromeDriver
+    if service is None:
+        try:
+            # 检查系统是否有chromedriver
+            result = subprocess.run(['which', 'chromedriver'], capture_output=True)
+            if result.returncode == 0:
+                logger.info("使用系统ChromeDriver")
+                service = Service("chromedriver")
+        except Exception as e:
+            logger.warning(f"系统ChromeDriver检查失败: {e}")
+    
+    # 方案3: 使用webdriver_manager，但指定稳定版本
+    if service is None:
+        try:
+            service = _create_chromedriver_service_with_retry()
+        except Exception as e:
+            logger.error(f"ChromeDriver安装完全失败: {e}")
+            raise RuntimeError("无法初始化ChromeDriver，请检查Chrome浏览器安装和网络连接")
     
     if service is None:
         raise RuntimeError("无法创建ChromeDriver服务")
