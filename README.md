@@ -80,10 +80,37 @@ python src/main.py mining --env=production --collector --classifier
 
 ### 行为模拟
 
-- 随机页面滚动（PAGE_DOWN、END、PAGE_UP）
-- 随机延迟（0.5-3秒）
+- 随机页面滚动（PAGE_DOWN、END、PAGE_UP、HOME）
+- 随机延迟（1-5秒）
 - 模拟人类点击行为
 - 智能页面切换
+- 随机用户代理
+- 随机搜索查询
+
+### 代理支持
+
+为了避免被Google拦截，建议使用代理：
+
+```bash
+# 设置代理环境变量
+export HTTP_PROXY="http://your-proxy:port"
+export HTTPS_PROXY="http://your-proxy:port"
+
+# 或者使用代理配置脚本
+python setup_proxy.py
+```
+
+### 代理类型支持
+
+- **HTTP代理**: `http://ip:port`
+- **SOCKS5代理**: `socks5://ip:port`
+- **认证代理**: `http://user:pass@ip:port`
+
+### 推荐代理服务
+
+- **免费代理**: 可能不稳定，建议用于测试
+- **付费代理**: 更稳定，推荐用于生产环境
+- **住宅代理**: 最不容易被检测，但价格较高
 
 ## 📊 数据分类
 
@@ -95,6 +122,59 @@ python src/main.py mining --env=production --collector --classifier
 - **Email Validation**: 邮箱验证
 - **SMS**: 手机短信验证
 - **CloudflareDefenseV2**: 高防服务器
+
+## 🌐 代理搜集功能
+
+### 自动代理搜集
+
+系统集成了自动代理搜集功能，可以从多个免费代理网站搜集代理：
+
+```bash
+# 搜集和测试代理
+python collect_proxies.py
+
+# 或者直接运行采集器（会自动搜集代理）
+python src/main.py mining --collector --classifier
+```
+
+### 代理源
+
+系统支持从以下代理源搜集代理：
+
+- **FreeProxyList**: https://free-proxy-list.net/
+- **ProxyNova**: https://www.proxynova.com/
+- **ProxyList**: https://www.proxy-list.download/
+- **SpysOne**: http://spys.one/
+
+### 代理管理
+
+- **自动测试**: 所有搜集的代理都会进行可用性测试
+- **速度排序**: 按响应速度对代理进行排序
+- **自动轮换**: 采集器会自动轮换使用不同代理
+- **失败处理**: 代理失败时会自动切换到下一个代理
+- **智能刷新**: 当所有代理都失效时，自动搜集新代理
+
+### 代理文件
+
+可用代理会保存到 `working_proxies.txt` 文件中，格式如下：
+
+```
+1.2.3.4:8080
+5.6.7.8:3128
+9.10.11.12:80
+```
+
+### 代理状态监控
+
+```bash
+# 查看代理状态
+python -c "
+from src.services.utils.proxy_manager import ProxyManager
+manager = ProxyManager()
+status = manager.get_proxy_status()
+print(f'总计: {status[\"total\"]}, 可用: {status[\"available\"]}, 失败: {status[\"failed\"]}')
+"
+```
 
 ## 🔍 故障排除
 
