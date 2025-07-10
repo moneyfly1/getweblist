@@ -236,7 +236,7 @@ jobs:
         
         # 步骤1: 搜集代理
         echo "Step 1: Collecting proxies..."
-        python collect_proxies.py || {
+        python collect_proxies.py --max-valid=15 || {
           echo "Proxy collection failed, but continuing..."
         }
         
@@ -316,6 +316,10 @@ jobs:
       run: |
         git config --global user.name "github-actions[bot]"
         git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+    - name: 拉取远程最新代码
+      run: |
+        git pull --rebase origin main
 
     - name: 添加并提交采集结果
       run: |
