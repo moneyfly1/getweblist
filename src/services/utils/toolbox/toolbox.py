@@ -287,18 +287,39 @@ def get_ctx(silence: Optional[bool] = None):
         logger.info(f"使用环境变量指定的ChromeDriver: {chrome_driver_path}")
         service = Service(chrome_driver_path)
     
-    # 方案2: 尝试使用系统ChromeDriver
+    # 方案2: 尝试使用系统ChromeDriver（改进版本）
     if service is None:
         try:
             # 检查系统是否有chromedriver
-            result = subprocess.run(['which', 'chromedriver'], capture_output=True)
+            result = subprocess.run(['which', 'chromedriver'], capture_output=True, text=True)
             if result.returncode == 0:
-                logger.info("使用系统ChromeDriver")
-                service = Service("chromedriver")
+                chromedriver_path = result.stdout.strip()
+                # 验证文件是否真实存在且可执行
+                if os.path.exists(chromedriver_path) and os.access(chromedriver_path, os.X_OK):
+                    logger.info(f"使用系统ChromeDriver: {chromedriver_path}")
+                    service = Service(chromedriver_path)
+                else:
+                    logger.warning(f"ChromeDriver路径存在但文件无效: {chromedriver_path}")
+            else:
+                logger.warning("系统ChromeDriver未找到")
         except Exception as e:
             logger.warning(f"系统ChromeDriver检查失败: {e}")
     
-    # 方案3: 使用webdriver_manager，但指定稳定版本
+    # 方案3: 尝试使用常见的ChromeDriver路径
+    if service is None:
+        common_paths = [
+            "/usr/local/bin/chromedriver",
+            "/usr/bin/chromedriver",
+            "/usr/bin/chromium-chromedriver",
+            "/snap/bin/chromedriver"
+        ]
+        for path in common_paths:
+            if os.path.exists(path) and os.access(path, os.X_OK):
+                logger.info(f"使用常见路径的ChromeDriver: {path}")
+                service = Service(path)
+                break
+    
+    # 方案4: 使用webdriver_manager，但指定稳定版本
     if service is None:
         try:
             service = _create_chromedriver_service_with_retry()
