@@ -308,7 +308,7 @@ jobs:
         echo "Proxy file:"
         ls -la working_proxies.txt 2>/dev/null || echo "No proxy file" 
     - name: 上传采集结果
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: sspanel-mining-results
         path: src/database/sspanel_hosts/classifier/*.csv 
