@@ -1,0 +1,38 @@
+name: SSPanel Mining
+
+on:
+  schedule:
+    - cron: '0 2 * * *'  # 每天凌晨2点运行
+  workflow_dispatch:  # 允许手动触发
+
+jobs:
+  mining:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+        
+    - name: Install Chrome and ChromeDriver
+      uses: nanasess/setup-chromedriver@v2
+      with:
+        # 使用最新稳定版本的Chrome
+        chromedriver-version: 'latest'
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        
+    - name: Run mining
+      run: |
+        cd src
+        python main.py mining --env=production --collector --classifier --source=local
+      env:
+        # 设置ChromeDriver路径
+        CHROME_DRIVER_PATH: ${{ env.CHROMEDRIVER_PATH }} 
