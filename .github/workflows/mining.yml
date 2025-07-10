@@ -18,7 +18,7 @@ jobs:
       with:
         python-version: '3.9'
         
-    - name: Install Chrome
+    - name: Install Chrome and ChromeDriver
       run: |
         # 安装Chrome浏览器
         wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
@@ -27,47 +27,33 @@ jobs:
         sudo apt-get install -y google-chrome-stable
         
         # 显示Chrome版本
+        echo "Chrome version:"
         google-chrome --version
         
-    - name: Install ChromeDriver
-      run: |
-        # 获取Chrome版本
-        CHROME_VERSION=$(google-chrome --version | awk '{print $3}' | awk -F'.' '{print $1}')
-        echo "Chrome version: $CHROME_VERSION"
+        # 安装ChromeDriver
+        echo "Installing ChromeDriver..."
         
-        # 尝试下载对应版本的ChromeDriver
-        # 使用备用下载源
-        CHROMEDRIVER_VERSION=""
+        # 使用已知稳定的ChromeDriver版本
+        CHROMEDRIVER_VERSION="114.0.5735.90"
         
-        # 尝试从Google官方获取版本
-        if [ ! -z "$CHROME_VERSION" ]; then
-          echo "Trying to get ChromeDriver version for Chrome $CHROME_VERSION..."
-          
-          # 尝试多个下载源
-          for source in "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_$CHROME_VERSION" \
-                        "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_$(($CHROME_VERSION-1))" \
-                        "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_$(($CHROME_VERSION-2))"; do
-            echo "Trying source: $source"
-            if curl -s -f "$source" > /dev/null; then
-              CHROMEDRIVER_VERSION=$(curl -s "$source")
-              echo "Found ChromeDriver version: $CHROMEDRIVER_VERSION"
-              break
-            fi
-          done
+        # 尝试多个下载源
+        echo "Downloading ChromeDriver version: $CHROMEDRIVER_VERSION"
+        
+        # 尝试从Google官方下载
+        if wget -q "https://chromedriver.storage.googleapis.com/$CHROMEDRIVER_VERSION/chromedriver_linux64.zip" -O chromedriver.zip; then
+          echo "Downloaded from Google storage"
+        elif wget -q "https://github.com/GoogleChromeLabs/chrome-for-testing/releases/download/$CHROMEDRIVER_VERSION/chromedriver-linux64.zip" -O chromedriver.zip; then
+          echo "Downloaded from GitHub releases"
+        elif wget -q "https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/$CHROMEDRIVER_VERSION/linux64/chromedriver-linux64.zip" -O chromedriver.zip; then
+          echo "Downloaded from Google CDN"
+        else
+          echo "All download sources failed, trying alternative version"
+          # 尝试备用版本
+          CHROMEDRIVER_VERSION="113.0.5672.63"
+          wget -q "https://chromedriver.storage.googleapis.com/$CHROMEDRIVER_VERSION/chromedriver_linux64.zip" -O chromedriver.zip || \
+          wget -q "https://github.com/GoogleChromeLabs/chrome-for-testing/releases/download/$CHROMEDRIVER_VERSION/chromedriver-linux64.zip" -O chromedriver.zip || \
+          wget -q "https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/$CHROMEDRIVER_VERSION/linux64/chromedriver-linux64.zip" -O chromedriver.zip
         fi
-        
-        # 如果无法获取版本，使用已知稳定版本
-        if [ -z "$CHROMEDRIVER_VERSION" ]; then
-          echo "Using fallback ChromeDriver version"
-          CHROMEDRIVER_VERSION="114.0.5735.90"
-        fi
-        
-        echo "Installing ChromeDriver version: $CHROMEDRIVER_VERSION"
-        
-        # 下载ChromeDriver
-        wget -q "https://chromedriver.storage.googleapis.com/$CHROMEDRIVER_VERSION/chromedriver_linux64.zip" -O chromedriver.zip || \
-        wget -q "https://github.com/GoogleChromeLabs/chrome-for-testing/releases/download/$CHROMEDRIVER_VERSION/chromedriver-linux64.zip" -O chromedriver.zip || \
-        wget -q "https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/$CHROMEDRIVER_VERSION/linux64/chromedriver-linux64.zip" -O chromedriver.zip
         
         # 解压并安装
         unzip -q chromedriver.zip
@@ -75,6 +61,7 @@ jobs:
         sudo chmod +x /usr/local/bin/chromedriver
         
         # 验证安装
+        echo "ChromeDriver version:"
         chromedriver --version
         
         # 设置环境变量
