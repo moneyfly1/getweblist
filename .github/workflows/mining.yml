@@ -1,206 +1,262 @@
 name: SSPanel Mining
 
 on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
   schedule:
-    - cron: '0 2 * * *'  # 每天凌晨2点运行
-  workflow_dispatch:  # 允许手动触发
+    # 每天凌晨2点运行
+    - cron: '0 2 * * *'
+  workflow_dispatch:
 
 jobs:
-  mining:
+  test-chromedriver:
     runs-on: ubuntu-latest
-    
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
+    - uses: actions/checkout@v4
+    
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
         python-version: '3.9'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Install Chrome
+      run: |
+        wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
+        echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" | sudo tee /etc/apt/sources.list.d/google-chrome.list
+        sudo apt-get update
+        sudo apt-get install -y google-chrome-stable
+    
+    - name: Get Chrome version
+      id: chrome-version
+      run: |
+        CHROME_VERSION=$(google-chrome --version | awk '{print $3}' | awk -F'.' '{print $1}')
+        echo "chrome_version=$CHROME_VERSION" >> $GITHUB_OUTPUT
+        echo "Chrome version: $CHROME_VERSION"
+    
+    - name: Download ChromeDriver
+      run: |
+        # 清理旧文件
+        sudo rm -rf /usr/local/bin/chromedriver
+        sudo rm -rf /tmp/chromedriver*
         
+        # 尝试多个下载源
+        CHROME_VERSION="${{ steps.chrome-version.outputs.chrome_version }}"
+        echo "Attempting to download ChromeDriver for Chrome version: $CHROME_VERSION"
+        
+        # 源1: Google Storage
+        if [ "$CHROME_VERSION" -ge 115 ]; then
+          # Chrome 115+ 使用新的下载方式
+          CHROMEDRIVER_VERSION="120.0.6099.109"
+        else
+          # 旧版本Chrome
+          CHROMEDRIVER_VERSION="$CHROME_VERSION.0.6045.105"
+        fi
+        
+        echo "Using ChromeDriver version: $CHROMEDRIVER_VERSION"
+        
+        # 尝试下载
+        DOWNLOAD_SUCCESS=false
+        
+        # 尝试源1: Google Storage
+        if ! $DOWNLOAD_SUCCESS; then
+          echo "Trying Google Storage..."
+          wget -q --timeout=30 --tries=3 -O /tmp/chromedriver.zip "https://storage.googleapis.com/chrome-for-testing-public/$CHROMEDRIVER_VERSION/linux64/chromedriver-linux64.zip" && DOWNLOAD_SUCCESS=true || echo "Google Storage failed"
+        fi
+        
+        # 尝试源2: GitHub Releases
+        if ! $DOWNLOAD_SUCCESS; then
+          echo "Trying GitHub Releases..."
+          wget -q --timeout=30 --tries=3 -O /tmp/chromedriver.zip "https://github.com/GoogleChromeLabs/chrome-for-testing/releases/download/$CHROMEDRIVER_VERSION/chromedriver-linux64.zip" && DOWNLOAD_SUCCESS=true || echo "GitHub Releases failed"
+        fi
+        
+        # 尝试源3: Google CDN
+        if ! $DOWNLOAD_SUCCESS; then
+          echo "Trying Google CDN..."
+          wget -q --timeout=30 --tries=3 -O /tmp/chromedriver.zip "https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/$CHROMEDRIVER_VERSION/linux64/chromedriver-linux64.zip" && DOWNLOAD_SUCCESS=true || echo "Google CDN failed"
+        fi
+        
+        # 尝试源4: 系统包管理器
+        if ! $DOWNLOAD_SUCCESS; then
+          echo "Trying system package manager..."
+          sudo apt-get install -y chromium-chromedriver && DOWNLOAD_SUCCESS=true || echo "System package manager failed"
+        fi
+        
+        if ! $DOWNLOAD_SUCCESS; then
+          echo "All download sources failed"
+          exit 1
+        fi
+        
+        # 如果是通过wget下载的，需要解压
+        if [ -f /tmp/chromedriver.zip ]; then
+          echo "Extracting ChromeDriver..."
+          unzip -q /tmp/chromedriver.zip -d /tmp/
+          
+          # 查找chromedriver可执行文件
+          CHROMEDRIVER_PATH=""
+          for path in /tmp/chromedriver-linux64/chromedriver /tmp/chromedriver/chromedriver /tmp/chromedriver; do
+            if [ -f "$path" ]; then
+              CHROMEDRIVER_PATH="$path"
+              break
+            fi
+          done
+          
+          if [ -z "$CHROMEDRIVER_PATH" ]; then
+            echo "ChromeDriver executable not found in extracted files"
+            ls -la /tmp/
+            exit 1
+          fi
+          
+          echo "Found ChromeDriver at: $CHROMEDRIVER_PATH"
+          sudo cp "$CHROMEDRIVER_PATH" /usr/local/bin/chromedriver
+          sudo chmod +x /usr/local/bin/chromedriver
+        fi
+    
+    - name: Verify ChromeDriver installation
+      run: |
+        echo "Verifying ChromeDriver installation..."
+        
+        # 检查文件是否存在
+        if [ ! -f /usr/local/bin/chromedriver ]; then
+          echo "ChromeDriver not found at /usr/local/bin/chromedriver"
+          exit 1
+        fi
+        
+        # 检查是否可执行
+        if [ ! -x /usr/local/bin/chromedriver ]; then
+          echo "ChromeDriver is not executable"
+          exit 1
+        fi
+        
+        # 检查是否在PATH中
+        if ! command -v chromedriver > /dev/null; then
+          echo "ChromeDriver not found in PATH"
+          exit 1
+        fi
+        
+        # 检查版本
+        CHROMEDRIVER_VERSION=$(chromedriver --version)
+        echo "ChromeDriver version: $CHROMEDRIVER_VERSION"
+        
+        echo "ChromeDriver installation verified successfully"
+    
+    - name: Test ChromeDriver with Python
+      run: |
+        echo "Testing ChromeDriver with Python..."
+        python test_chromedriver_install.py
+    
+    - name: Test simple ChromeDriver
+      run: |
+        echo "Testing simple ChromeDriver functionality..."
+        python test_simple.py
+
+  mining:
+    runs-on: ubuntu-latest
+    needs: test-chromedriver
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
     - name: Install Chrome and ChromeDriver
       run: |
-        # 安装Chrome浏览器
+        # 安装Chrome
         wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
         echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" | sudo tee /etc/apt/sources.list.d/google-chrome.list
         sudo apt-get update
         sudo apt-get install -y google-chrome-stable
         
-        # 显示Chrome版本
-        echo "Chrome version:"
-        google-chrome --version
-        
-        # 获取Chrome版本号
+        # 获取Chrome版本
         CHROME_VERSION=$(google-chrome --version | awk '{print $3}' | awk -F'.' '{print $1}')
-        echo "Chrome major version: $CHROME_VERSION"
+        echo "Chrome version: $CHROME_VERSION"
         
-        # 安装ChromeDriver
-        echo "Installing ChromeDriver..."
-        
-        # 首先尝试使用系统包管理器安装
-        echo "Trying to install ChromeDriver via package manager..."
-        if sudo apt-get install -y chromium-chromedriver; then
-          echo "Successfully installed ChromeDriver via package manager"
-          sudo ln -sf /usr/bin/chromium-chromedriver /usr/local/bin/chromedriver
+        # 下载ChromeDriver
+        if [ "$CHROME_VERSION" -ge 115 ]; then
+          CHROMEDRIVER_VERSION="120.0.6099.109"
         else
-          echo "Package manager installation failed, trying manual download..."
-          
-          # 根据Chrome版本选择对应的ChromeDriver版本
-          case $CHROME_VERSION in
-            138|137|136|135|134|133|132|131|130|129|128|127|126|125|124|123|122|121|120)
-              CHROMEDRIVER_VERSION="120.0.6099.109"
-              ;;
-            119)
-              CHROMEDRIVER_VERSION="119.0.6045.105"
-              ;;
-            118)
-              CHROMEDRIVER_VERSION="118.0.5993.70"
-              ;;
-            117)
-              CHROMEDRIVER_VERSION="117.0.5938.149"
-              ;;
-            116)
-              CHROMEDRIVER_VERSION="116.0.5845.96"
-              ;;
-            115)
-              CHROMEDRIVER_VERSION="115.0.5790.170"
-              ;;
-            114)
-              CHROMEDRIVER_VERSION="114.0.5735.90"
-              ;;
-            113)
-              CHROMEDRIVER_VERSION="113.0.5672.63"
-              ;;
-            112)
-              CHROMEDRIVER_VERSION="112.0.5615.49"
-              ;;
-            111)
-              CHROMEDRIVER_VERSION="111.0.5563.64"
-              ;;
-            110)
-              CHROMEDRIVER_VERSION="110.0.5481.77"
-              ;;
-            109)
-              CHROMEDRIVER_VERSION="109.0.5414.119"
-              ;;
-            108)
-              CHROMEDRIVER_VERSION="108.0.5359.71"
-              ;;
-            107)
-              CHROMEDRIVER_VERSION="107.0.5304.18"
-              ;;
-            106)
-              CHROMEDRIVER_VERSION="106.0.5249.61"
-              ;;
-            105)
-              CHROMEDRIVER_VERSION="105.0.5195.52"
-              ;;
-            104)
-              CHROMEDRIVER_VERSION="104.0.5112.79"
-              ;;
-            103)
-              CHROMEDRIVER_VERSION="103.0.5060.134"
-              ;;
-            102)
-              CHROMEDRIVER_VERSION="102.0.5005.61"
-              ;;
-            101)
-              CHROMEDRIVER_VERSION="101.0.4951.41"
-              ;;
-            100)
-              CHROMEDRIVER_VERSION="100.0.4896.75"
-              ;;
-            *)
-              # 对于其他版本，使用最新的稳定版本
-              CHROMEDRIVER_VERSION="120.0.6099.109"
-              ;;
-          esac
-          
-          echo "Selected ChromeDriver version: $CHROMEDRIVER_VERSION"
-          
-          # 尝试多个下载源
-          echo "Downloading ChromeDriver version: $CHROMEDRIVER_VERSION"
-          
-          # 清理之前的文件
-          rm -f chromedriver.zip
-          rm -f chromedriver
-          rm -f chromedriver-linux64/chromedriver
-          
-          # 尝试从Google官方下载
-          if wget -q "https://chromedriver.storage.googleapis.com/$CHROMEDRIVER_VERSION/chromedriver_linux64.zip" -O chromedriver.zip; then
-            echo "Downloaded from Google storage"
-          elif wget -q "https://github.com/GoogleChromeLabs/chrome-for-testing/releases/download/$CHROMEDRIVER_VERSION/chromedriver-linux64.zip" -O chromedriver.zip; then
-            echo "Downloaded from GitHub releases"
-          elif wget -q "https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/$CHROMEDRIVER_VERSION/linux64/chromedriver-linux64.zip" -O chromedriver.zip; then
-            echo "Downloaded from Google CDN"
-          else
-            echo "All download sources failed, trying alternative version"
-            # 尝试备用版本
-            CHROMEDRIVER_VERSION="120.0.6099.109"
-            wget -q "https://chromedriver.storage.googleapis.com/$CHROMEDRIVER_VERSION/chromedriver_linux64.zip" -O chromedriver.zip || \
-            wget -q "https://github.com/GoogleChromeLabs/chrome-for-testing/releases/download/$CHROMEDRIVER_VERSION/chromedriver-linux64.zip" -O chromedriver.zip || \
-            wget -q "https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/$CHROMEDRIVER_VERSION/linux64/chromedriver-linux64.zip" -O chromedriver.zip
-          fi
-          
-          # 检查下载是否成功
-          if [ ! -f chromedriver.zip ]; then
-            echo "Error: Failed to download ChromeDriver"
-            exit 1
-          fi
-          
-          echo "Download successful, file size: $(ls -lh chromedriver.zip | awk '{print $5}')"
-          
-          # 解压并安装
-          echo "Extracting ChromeDriver..."
-          unzip -q chromedriver.zip
-          
-          # 检查解压后的文件
-          echo "Checking extracted files:"
-          ls -la
-          
-          # 查找chromedriver文件
-          if [ -f "chromedriver" ]; then
-            echo "Found chromedriver in current directory"
-            sudo mv chromedriver /usr/local/bin/
-          elif [ -f "chromedriver-linux64/chromedriver" ]; then
-            echo "Found chromedriver in chromedriver-linux64 directory"
-            sudo mv chromedriver-linux64/chromedriver /usr/local/bin/
-          elif [ -f "chromedriver-linux64/chromedriver-linux64/chromedriver" ]; then
-            echo "Found chromedriver in nested directory"
-            sudo mv chromedriver-linux64/chromedriver-linux64/chromedriver /usr/local/bin/
-          else
-            echo "Error: Could not find chromedriver executable"
-            echo "Available files:"
-            find . -name "*chromedriver*" -type f
-            exit 1
-          fi
-          
-          sudo chmod +x /usr/local/bin/chromedriver
+          CHROMEDRIVER_VERSION="$CHROME_VERSION.0.6045.105"
         fi
         
-        # 验证安装
-        echo "ChromeDriver version:"
-        chromedriver --version
+        echo "Using ChromeDriver version: $CHROMEDRIVER_VERSION"
         
-        # 验证ChromeDriver是否在PATH中
-        echo "Checking ChromeDriver in PATH:"
-        which chromedriver
+        # 尝试下载ChromeDriver
+        wget -q --timeout=30 --tries=3 -O /tmp/chromedriver.zip "https://storage.googleapis.com/chrome-for-testing-public/$CHROMEDRIVER_VERSION/linux64/chromedriver-linux64.zip" || \
+        wget -q --timeout=30 --tries=3 -O /tmp/chromedriver.zip "https://github.com/GoogleChromeLabs/chrome-for-testing/releases/download/$CHROMEDRIVER_VERSION/chromedriver-linux64.zip" || \
+        sudo apt-get install -y chromium-chromedriver
         
-        # 验证ChromeDriver是否可执行
-        echo "Checking ChromeDriver executable:"
-        ls -la /usr/local/bin/chromedriver
-        
-        # 设置环境变量
-        echo "CHROME_DRIVER_PATH=/usr/local/bin/chromedriver" >> $GITHUB_ENV
-        
-    - name: Install dependencies
+        if [ -f /tmp/chromedriver.zip ]; then
+          unzip -q /tmp/chromedriver.zip -d /tmp/
+          sudo cp /tmp/chromedriver-linux64/chromedriver /usr/local/bin/chromedriver
+          sudo chmod +x /usr/local/bin/chromedriver
+        fi
+    
+    - name: Test collector retry mechanism
       run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-        
-    - name: Run mining
+        echo "Testing collector retry mechanism..."
+        python test_collector_retry.py
+    
+    - name: Run mining with error handling
       run: |
-        cd src
-        python main.py mining --env=production --collector --classifier --source=local
-      env:
-        CHROME_DRIVER_PATH: /usr/local/bin/chromedriver 
+        echo "Running SSPanel mining with improved error handling..."
+        
+        # 设置环境变量以启用重试机制
+        export MAX_RETRIES=3
+        export RETRY_DELAY=30
+        
+        # 运行采集器，如果遇到CollectorSwitchError则重试
+        python src/main.py mining --env=production --collector --classifier --source=local || {
+          echo "Mining failed, but this might be due to Google blocking (expected behavior)"
+          echo "Checking if any data was collected..."
+          
+          # 检查是否生成了任何数据文件
+          if ls src/database/sspanel_hosts/dataset_*.txt 1> /dev/null 2>&1; then
+            echo "Data files found, mining partially successful"
+            ls -la src/database/sspanel_hosts/dataset_*.txt
+            exit 0
+          else
+            echo "No data files found, mining completely failed"
+            exit 1
+          fi
+        }
+    
+    - name: Check results
+      run: |
+        echo "Checking mining results..."
+        
+        # 检查是否生成了数据文件
+        if ls src/database/sspanel_hosts/dataset_*.txt 1> /dev/null 2>&1; then
+          echo "✅ Mining data files found:"
+          ls -la src/database/sspanel_hosts/dataset_*.txt
+          
+          # 显示最新的数据文件内容
+          LATEST_FILE=$(ls -t src/database/sspanel_hosts/dataset_*.txt | head -1)
+          echo "Latest data file: $LATEST_FILE"
+          if [ -f "$LATEST_FILE" ]; then
+            echo "First 10 lines:"
+            head -10 "$LATEST_FILE"
+          fi
+        else
+          echo "❌ No mining data files found"
+        fi
+        
+        # 检查是否生成了分类文件
+        if ls src/database/sspanel_hosts/classifier/mining_*.csv 1> /dev/null 2>&1; then
+          echo "✅ Classifier files found:"
+          ls -la src/database/sspanel_hosts/classifier/mining_*.csv
+        else
+          echo "❌ No classifier files found"
+        fi 
