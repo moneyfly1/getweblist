@@ -18,11 +18,67 @@ jobs:
       with:
         python-version: '3.9'
         
-    - name: Install Chrome and ChromeDriver
-      uses: nanasess/setup-chromedriver@v2
-      with:
-        # 使用最新稳定版本的Chrome
-        chromedriver-version: 'latest'
+    - name: Install Chrome
+      run: |
+        # 安装Chrome浏览器
+        wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
+        echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" | sudo tee /etc/apt/sources.list.d/google-chrome.list
+        sudo apt-get update
+        sudo apt-get install -y google-chrome-stable
+        
+        # 显示Chrome版本
+        google-chrome --version
+        
+    - name: Install ChromeDriver
+      run: |
+        # 获取Chrome版本
+        CHROME_VERSION=$(google-chrome --version | awk '{print $3}' | awk -F'.' '{print $1}')
+        echo "Chrome version: $CHROME_VERSION"
+        
+        # 尝试下载对应版本的ChromeDriver
+        # 使用备用下载源
+        CHROMEDRIVER_VERSION=""
+        
+        # 尝试从Google官方获取版本
+        if [ ! -z "$CHROME_VERSION" ]; then
+          echo "Trying to get ChromeDriver version for Chrome $CHROME_VERSION..."
+          
+          # 尝试多个下载源
+          for source in "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_$CHROME_VERSION" \
+                        "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_$(($CHROME_VERSION-1))" \
+                        "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_$(($CHROME_VERSION-2))"; do
+            echo "Trying source: $source"
+            if curl -s -f "$source" > /dev/null; then
+              CHROMEDRIVER_VERSION=$(curl -s "$source")
+              echo "Found ChromeDriver version: $CHROMEDRIVER_VERSION"
+              break
+            fi
+          done
+        fi
+        
+        # 如果无法获取版本，使用已知稳定版本
+        if [ -z "$CHROMEDRIVER_VERSION" ]; then
+          echo "Using fallback ChromeDriver version"
+          CHROMEDRIVER_VERSION="114.0.5735.90"
+        fi
+        
+        echo "Installing ChromeDriver version: $CHROMEDRIVER_VERSION"
+        
+        # 下载ChromeDriver
+        wget -q "https://chromedriver.storage.googleapis.com/$CHROMEDRIVER_VERSION/chromedriver_linux64.zip" -O chromedriver.zip || \
+        wget -q "https://github.com/GoogleChromeLabs/chrome-for-testing/releases/download/$CHROMEDRIVER_VERSION/chromedriver-linux64.zip" -O chromedriver.zip || \
+        wget -q "https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/$CHROMEDRIVER_VERSION/linux64/chromedriver-linux64.zip" -O chromedriver.zip
+        
+        # 解压并安装
+        unzip -q chromedriver.zip
+        sudo mv chromedriver /usr/local/bin/
+        sudo chmod +x /usr/local/bin/chromedriver
+        
+        # 验证安装
+        chromedriver --version
+        
+        # 设置环境变量
+        echo "CHROME_DRIVER_PATH=/usr/local/bin/chromedriver" >> $GITHUB_ENV
         
     - name: Install dependencies
       run: |
@@ -34,5 +90,4 @@ jobs:
         cd src
         python main.py mining --env=production --collector --classifier --source=local
       env:
-        # 设置ChromeDriver路径
-        CHROME_DRIVER_PATH: ${{ env.CHROMEDRIVER_PATH }} 
+        CHROME_DRIVER_PATH: /usr/local/bin/chromedriver 
