@@ -312,10 +312,15 @@ jobs:
       with:
         name: sspanel-mining-results
         path: src/database/sspanel_hosts/classifier/*.csv 
+
     - name: 配置 Git
       run: |
         git config --global user.name "github-actions[bot]"
         git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+    - name: 设置远程仓库推送凭据
+      run: |
+        git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/moneyfly1/getweblist.git
 
     - name: 拉取远程最新代码
       run: |
