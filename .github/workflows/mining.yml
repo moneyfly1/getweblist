@@ -312,3 +312,15 @@ jobs:
       with:
         name: sspanel-mining-results
         path: src/database/sspanel_hosts/classifier/*.csv 
+    - name: 配置 Git
+      run: |
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+    - name: 添加并提交采集结果
+      run: |
+        git add src/database/sspanel_hosts/classifier/*.csv
+        git commit -m "自动采集: 更新最新csv结果 [skip ci]" || echo "No changes to commit"
+        git push
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
