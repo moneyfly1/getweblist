@@ -4,18 +4,21 @@
 # Github     : https://github.com/QIN2DIM
 # Description:
 import os
-from os.path import dirname, join, exists
+from os.path import dirname, join, exists, abspath
 
 import pytz
 
 # ---------------------------------------------------
 # TODO [√] 项目索引路径定位
 # ---------------------------------------------------
-# 工程根目录
-PROJECT_ROOT = dirname(dirname(__file__))
+# 获取项目根目录（适用于本地和云端）
+def get_project_root():
+    return abspath(os.path.join(os.path.dirname(__file__), '../../..'))
+
+PROJECT_ROOT = get_project_root()
 
 # 系统数据库
-PROJECT_DATABASE = join(PROJECT_ROOT, "database")
+PROJECT_DATABASE = join(PROJECT_ROOT, "src", "database")
 
 # 运行缓存:采集器输出目录
 DIR_OUTPUT_STORE_COLLECTOR = join(PROJECT_DATABASE, "sspanel_hosts")
