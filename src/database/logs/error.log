@@ -1,0 +1,81 @@
+2025-07-10 11:44:54.143 | ERROR    | services.utils.toolbox.toolbox:get_ctx:327 - ChromeDriver安装完全失败: ChromeDriverManager.__init__() got an unexpected keyword argument 'version'
+2025-07-10 12:00:54.019 | ERROR    | services.utils.toolbox.toolbox:get_ctx:331 - ChromeDriver安装完全失败: ChromeDriverManager.__init__() got an unexpected keyword argument 'log_level'
+2025-07-10 12:00:54.564 | ERROR    | services.sspanel_mining.sspanel_classifier:control_driver:213 - 流量阻断 - [__pending__] url=https://www.acto01.xyz/auth/register
+2025-07-10 12:00:55.415 | ERROR    | services.sspanel_mining.sspanel_classifier:_fall_status:50 - 请求异常 - [__pending__] url=https://surfbird.net/auth/register
+2025-07-10 12:00:56.986 | ERROR    | services.sspanel_mining.sspanel_classifier:control_driver:213 - 流量阻断 - [__pending__] url=https://www.netpad.rocks/auth/register
+2025-07-10 12:00:59.694 | ERROR    | services.sspanel_mining.sspanel_classifier:control_driver:213 - 流量阻断 - [__pending__] url=https://www.tail.one/auth/register
+2025-07-10 12:02:01.081 | ERROR    | services.sspanel_mining.sspanel_classifier:control_driver:238 - 响应超时 - [10/1134] url=https://43.129.30.90/auth/register
+2025-07-10 12:02:12.767 | ERROR    | services.sspanel_mining.sspanel_classifier:control_driver:213 - 流量阻断 - [14/1134] url=https://bcloudv.com/auth/register
+2025-07-10 12:02:13.299 | ERROR    | services.sspanel_mining.sspanel_classifier:control_driver:213 - 流量阻断 - [15/1134] url=https://u.vpork.com/auth/register
+2025-07-10 12:02:13.532 | ERROR    | services.sspanel_mining.sspanel_classifier:control_driver:213 - 流量阻断 - [16/1134] url=https://www.jxyun588.xyz/auth/register
+2025-07-10 12:02:15.676 | ERROR    | services.sspanel_mining.sspanel_classifier:_fall_status:50 - 请求异常 - [17/1134] url=https://pixiv.digital/auth/register
+2025-07-10 12:02:16.816 | ERROR    | services.sspanel_mining.sspanel_classifier:control_driver:213 - 流量阻断 - [18/1134] url=https://tiyunzong.cloud/auth/register
+2025-07-10 12:02:17.029 | ERROR    | services.sspanel_mining.sspanel_classifier:control_driver:213 - 流量阻断 - [19/1134] url=https://xniuniu888.site/auth/register
+2025-07-10 12:02:17.137 | ERROR    | services.sspanel_mining.sspanel_classifier:control_driver:213 - 流量阻断 - [20/1134] url=https://www.laowuvpn.com/auth/register
+2025-07-10 12:02:17.363 | ERROR    | services.sspanel_mining.sspanel_classifier:control_driver:213 - 流量阻断 - [21/1134] url=https://www.iwuji.xyz/auth/register
+2025-07-10 12:02:19.436 | ERROR    | services.sspanel_mining.sspanel_classifier:_fall_status:50 - 请求异常 - [22/1134] url=https://www.meiccc.com/auth/register
+2025-07-10 12:02:23.513 | ERROR    | services.sspanel_mining.sspanel_classifier:control_driver:213 - 流量阻断 - [25/1134] url=https://www.5g33.com/auth/register
+2025-07-10 12:02:23.727 | ERROR    | services.sspanel_mining.sspanel_classifier:control_driver:213 - 流量阻断 - [27/1134] url=https://wdnmd.click/auth/register
+2025-07-10 12:02:23.851 | ERROR    | services.sspanel_mining.sspanel_classifier:control_driver:213 - 流量阻断 - [28/1134] url=https://cloud.imust.top/auth/register
+2025-07-10 12:02:43.904 | ERROR    | services.sspanel_mining.sspanel_classifier:_fall_status:50 - 请求异常 - [30/1134] url=https://www.marst1.com/auth/register
+2025-07-10 12:02:45.593 | ERROR    | services.sspanel_mining.sspanel_classifier:control_driver:213 - 流量阻断 - [34/1134] url=https://gatlin.pro/auth/register
+2025-07-10 12:02:46.258 | ERROR    | services.sspanel_mining.sspanel_classifier:_fall_status:50 - 请求异常 - [35/1134] url=https://www.rickroll.one/auth/register
+2025-07-10 12:02:48.537 | ERROR    | services.sspanel_mining.sspanel_classifier:control_driver:213 - 流量阻断 - [36/1134] url=https://jyplus.cloud/auth/register
+2025-07-10 12:03:11.795 | ERROR    | services.sspanel_mining.sspanel_classifier:_fall_status:50 - 请求异常 - [41/1134] url=https://cv2.work/auth/register
+2025-07-10 12:03:12.001 | ERROR    | services.sspanel_mining.sspanel_classifier:control_driver:213 - 流量阻断 - [42/1134] url=https://20220815.com/auth/register
+2025-07-10 12:03:14.582 | ERROR    | services.sspanel_mining.sspanel_classifier:_fall_status:50 - 请求异常 - [44/1134] url=https://333bear.com/auth/register
+2025-07-10 12:03:14.846 | ERROR    | services.sspanel_mining.sspanel_classifier:control_driver:213 - 流量阻断 - [45/1134] url=https://10cloud.xyz/auth/register
+2025-07-10 12:03:14.961 | ERROR    | services.sspanel_mining.sspanel_classifier:control_driver:213 - 流量阻断 - [46/1134] url=https://qq.com.w4-03.club/auth/register
+2025-07-10 12:03:15.237 | ERROR    | services.sspanel_mining.sspanel_classifier:control_driver:213 - 流量阻断 - [47/1134] url=https://apidna.cloud/auth/register
+2025-07-10 12:03:15.854 | ERROR    | services.sspanel_mining.sspanel_classifier:_fall_status:50 - 请求异常 - [48/1134] url=https://v2find.club/auth/register
+2025-07-10 12:03:16.107 | ERROR    | services.sspanel_mining.sspanel_classifier:control_driver:213 - 流量阻断 - [50/1134] url=https://cyoooo.cc/auth/register
+2025-07-10 12:03:16.346 | ERROR    | services.sspanel_mining.sspanel_classifier:control_driver:213 - 流量阻断 - [51/1134] url=https://sviptiz.xyz/auth/register
+2025-07-10 12:03:36.576 | ERROR    | services.sspanel_mining.sspanel_classifier:_fall_status:50 - 请求异常 - [52/1134] url=https://xiao91.com/auth/register
+2025-07-10 12:03:37.972 | ERROR    | services.sspanel_mining.sspanel_classifier:_fall_status:50 - 请求异常 - [53/1134] url=https://www.heduian.cloud/auth/register
+2025-07-10 12:03:38.184 | ERROR    | services.sspanel_mining.sspanel_classifier:control_driver:213 - 流量阻断 - [54/1134] url=https://www.sufeiyun.pw/auth/register
+2025-07-10 12:03:38.415 | ERROR    | services.sspanel_mining.sspanel_classifier:control_driver:213 - 流量阻断 - [55/1134] url=https://www.biegaowole.xyz/auth/register
+2025-07-10 12:03:43.814 | ERROR    | services.sspanel_mining.sspanel_classifier:_fall_status:50 - 请求异常 - [57/1134] url=https://skr.bar/auth/register
+2025-07-10 12:03:44.045 | ERROR    | services.sspanel_mining.sspanel_classifier:control_driver:213 - 流量阻断 - [58/1134] url=https://aaa.niuniuniuniu.top/auth/register
+2025-07-10 12:03:45.520 | ERROR    | services.sspanel_mining.sspanel_classifier:_fall_status:50 - 请求异常 - [59/1134] url=https://www.laov888.com/auth/register
+2025-07-10 12:03:46.900 | ERROR    | services.sspanel_mining.sspanel_classifier:control_driver:213 - 流量阻断 - [61/1134] url=https://ss.abab.link/auth/register
+2025-07-10 12:03:49.691 | ERROR    | services.sspanel_mining.sspanel_classifier:control_driver:213 - 流量阻断 - [62/1134] url=https://www.hnyhgl.com/auth/register
+2025-07-10 12:03:52.151 | ERROR    | services.sspanel_mining.sspanel_classifier:_fall_status:50 - 请求异常 - [63/1134] url=https://www.takumitek.co/auth/register
+2025-07-10 12:03:52.587 | ERROR    | services.sspanel_mining.sspanel_classifier:control_driver:213 - 流量阻断 - [64/1134] url=https://kapoksub.com/auth/register
+2025-07-10 12:03:54.334 | ERROR    | services.sspanel_mining.sspanel_classifier:control_driver:213 - 流量阻断 - [66/1134] url=https://ofor.cc/auth/register
+2025-07-10 12:03:55.609 | ERROR    | services.sspanel_mining.sspanel_classifier:control_driver:213 - 流量阻断 - [68/1134] url=https://wol.company/auth/register
+2025-07-10 12:04:15.934 | ERROR    | services.sspanel_mining.sspanel_classifier:_fall_status:50 - 请求异常 - [70/1134] url=https://seagullvpn.com/auth/register
+2025-07-10 12:04:16.160 | ERROR    | services.sspanel_mining.sspanel_classifier:control_driver:213 - 流量阻断 - [71/1134] url=https://www.dongdongcloud.fun/auth/register
+2025-07-10 12:04:56.413 | ERROR    | services.sspanel_mining.sspanel_classifier:_fall_status:50 - 请求异常 - [75/1134] url=https://jisu.nl/auth/register
+2025-07-10 12:04:56.518 | ERROR    | services.sspanel_mining.sspanel_classifier:control_driver:213 - 流量阻断 - [76/1134] url=https://call.chenxing.gq/auth/register
+2025-07-10 12:04:57.301 | ERROR    | services.sspanel_mining.sspanel_classifier:_fall_status:50 - 请求异常 - [78/1134] url=https://seebeyond2021.com/auth/register
+2025-07-10 12:04:57.391 | ERROR    | services.sspanel_mining.sspanel_classifier:control_driver:213 - 流量阻断 - [79/1134] url=https://mukusd.com/auth/register
+2025-07-10 12:04:57.625 | ERROR    | services.sspanel_mining.sspanel_classifier:control_driver:213 - 流量阻断 - [80/1134] url=https://anway.xyz/auth/register
+2025-07-10 12:04:59.133 | ERROR    | services.sspanel_mining.sspanel_classifier:control_driver:213 - 流量阻断 - [83/1134] url=https://www.xmbjsq.com/auth/register
+2025-07-10 12:05:00.771 | ERROR    | services.sspanel_mining.sspanel_classifier:_fall_status:50 - 请求异常 - [85/1134] url=https://maomi.in/auth/register
+2025-07-10 12:05:00.997 | ERROR    | services.sspanel_mining.sspanel_classifier:control_driver:213 - 流量阻断 - [86/1134] url=https://www.shadowrocket.co/auth/register
+2025-07-10 12:05:01.226 | ERROR    | services.sspanel_mining.sspanel_classifier:control_driver:213 - 流量阻断 - [87/1134] url=https://www.feitian.online/auth/register
+2025-07-10 12:05:01.290 | ERROR    | services.sspanel_mining.sspanel_classifier:control_driver:213 - 流量阻断 - [88/1134] url=https://maoqiang.vip/auth/register
+2025-07-10 12:06:01.906 | ERROR    | services.sspanel_mining.sspanel_classifier:control_driver:238 - 响应超时 - [89/1134] url=https://de1.foreign-expat-tv.win/auth/register
+2025-07-10 12:06:04.270 | ERROR    | services.sspanel_mining.sspanel_classifier:control_driver:213 - 流量阻断 - [92/1134] url=https://sgy58.com/auth/register
+2025-07-10 12:06:05.275 | ERROR    | services.sspanel_mining.sspanel_classifier:_fall_status:50 - 请求异常 - [93/1134] url=https://ssr.pogoss.vip/auth/register
+2025-07-10 12:06:05.341 | ERROR    | services.sspanel_mining.sspanel_classifier:control_driver:213 - 流量阻断 - [94/1134] url=https://oxopron.top/auth/register
+2025-07-10 12:06:05.575 | ERROR    | services.sspanel_mining.sspanel_classifier:control_driver:213 - 流量阻断 - [95/1134] url=https://jssj.cyou/auth/register
+2025-07-10 12:26:56.839 | ERROR    | services.utils.proxy_collector:fetch_proxies_from_source:348 - 从 Premproxy 获取代理时出错: HTTPSConnectionPool(host='premproxy.com', port=443): Max retries exceeded with url: /proxy-by-country/ (Caused by SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: certificate has expired (_ssl.c:1028)')))
+2025-07-10 12:26:57.695 | ERROR    | services.utils.proxy_collector:fetch_proxies_from_source:348 - 从 FreeProxyCZ 获取代理时出错: HTTPSConnectionPool(host='free-proxy.cz', port=443): Max retries exceeded with url: /en/proxylist/country-all/http/ping-all (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1028)')))
+2025-07-10 12:27:06.834 | ERROR    | services.utils.proxy_collector:fetch_proxies_from_source:348 - 从 66ip 获取代理时出错: HTTPConnectionPool(host='www.66ip.cn', port=80): Max retries exceeded with url: /mo.php?tqsl=100 (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x000002C7ADB7E210>, 'Connection to www.66ip.cn timed out. (connect timeout=15)'))
+2025-07-10 12:27:07.320 | ERROR    | services.utils.proxy_collector:fetch_proxies_from_source:348 - 从 Goubanjia 获取代理时出错: HTTPConnectionPool(host='www.goubanjia.com', port=80): Read timed out. (read timeout=15)
+2025-07-10 12:34:31.707 | ERROR    | services.utils.toolbox.toolbox:get_ctx:357 - ChromeDriver安装完全失败: ChromeDriverManager.__init__() got an unexpected keyword argument 'log_level'
+2025-07-10 12:35:00.599 | ERROR    | services.utils.proxy_collector:fetch_proxies_from_source:348 - 从 Premproxy 获取代理时出错: HTTPSConnectionPool(host='premproxy.com', port=443): Max retries exceeded with url: /proxy-by-country/ (Caused by SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: certificate has expired (_ssl.c:1028)')))
+2025-07-10 12:35:02.019 | ERROR    | services.utils.proxy_collector:fetch_proxies_from_source:348 - 从 FreeProxyCZ 获取代理时出错: HTTPSConnectionPool(host='free-proxy.cz', port=443): Max retries exceeded with url: /en/proxylist/country-all/http/ping-all (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1028)')))
+2025-07-10 12:35:09.843 | ERROR    | services.utils.proxy_collector:fetch_proxies_from_source:348 - 从 66ip 获取代理时出错: HTTPConnectionPool(host='www.66ip.cn', port=80): Max retries exceeded with url: /mo.php?tqsl=100 (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x00000266B837A350>, 'Connection to www.66ip.cn timed out. (connect timeout=15)'))
+2025-07-10 12:35:10.403 | ERROR    | services.utils.proxy_collector:fetch_proxies_from_source:348 - 从 Goubanjia 获取代理时出错: HTTPConnectionPool(host='www.goubanjia.com', port=80): Read timed out. (read timeout=15)
+2025-07-10 12:42:49.143 | ERROR    | services.utils.toolbox.toolbox:get_ctx:357 - ChromeDriver安装完全失败: Could not reach host. Are you offline?
+2025-07-10 13:23:31.590 | ERROR    | services.utils.proxy_collector:fetch_proxies_from_source:348 - 从 FreeProxyCZ 获取代理时出错: HTTPSConnectionPool(host='free-proxy.cz', port=443): Max retries exceeded with url: /en/proxylist/country-all/http/ping-all (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1028)')))
+2025-07-10 13:23:31.772 | ERROR    | services.utils.proxy_collector:fetch_proxies_from_source:348 - 从 Premproxy 获取代理时出错: HTTPSConnectionPool(host='premproxy.com', port=443): Max retries exceeded with url: /proxy-by-country/ (Caused by SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: certificate has expired (_ssl.c:1028)')))
+2025-07-10 13:23:40.837 | ERROR    | services.utils.proxy_collector:fetch_proxies_from_source:348 - 从 66ip 获取代理时出错: HTTPConnectionPool(host='www.66ip.cn', port=80): Max retries exceeded with url: /mo.php?tqsl=100 (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x000001938D3AE210>, 'Connection to www.66ip.cn timed out. (connect timeout=15)'))
+2025-07-10 13:23:41.475 | ERROR    | services.utils.proxy_collector:fetch_proxies_from_source:348 - 从 Goubanjia 获取代理时出错: HTTPConnectionPool(host='www.goubanjia.com', port=80): Read timed out. (read timeout=15)
+2025-07-10 13:31:42.539 | ERROR    | services.utils.toolbox.toolbox:get_ctx:357 - ChromeDriver安装完全失败: Could not reach host. Are you offline?
+2025-07-10 14:23:11.477 | ERROR    | services.utils.proxy_collector:fetch_proxies_from_source:348 - 从 FreeProxyCZ 获取代理时出错: HTTPSConnectionPool(host='free-proxy.cz', port=443): Max retries exceeded with url: /en/proxylist/country-all/http/ping-all (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1028)')))
+2025-07-10 14:23:11.735 | ERROR    | services.utils.proxy_collector:fetch_proxies_from_source:348 - 从 Premproxy 获取代理时出错: HTTPSConnectionPool(host='premproxy.com', port=443): Max retries exceeded with url: /proxy-by-country/ (Caused by SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: certificate has expired (_ssl.c:1028)')))
+2025-07-10 14:23:20.001 | ERROR    | services.utils.proxy_collector:fetch_proxies_from_source:348 - 从 66ip 获取代理时出错: HTTPConnectionPool(host='www.66ip.cn', port=80): Max retries exceeded with url: /mo.php?tqsl=100 (Caused by ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x00000232EEE02350>, 'Connection to www.66ip.cn timed out. (connect timeout=15)'))
+2025-07-10 14:23:20.467 | ERROR    | services.utils.proxy_collector:fetch_proxies_from_source:348 - 从 Goubanjia 获取代理时出错: HTTPConnectionPool(host='www.goubanjia.com', port=80): Read timed out. (read timeout=15)
