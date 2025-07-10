@@ -45,7 +45,7 @@ jobs:
         run: |
           cd src && python main.py mining --env=production --collector --classifier --source=local
       - name: 上传采集结果
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: sspanel-mining-results
           path: src/database/sspanel_hosts/classifier/*.csv
