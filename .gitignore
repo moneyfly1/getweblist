@@ -129,3 +129,6 @@ dmypy.json
 .pyre/
 .idea
 database/logs/
+
+# 允许 classifier 目录下的 csv 文件被 git 跟踪
+!src/database/sspanel_hosts/classifier/*.csv
