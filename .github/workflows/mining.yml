@@ -37,102 +37,146 @@ jobs:
         # 安装ChromeDriver
         echo "Installing ChromeDriver..."
         
-        # 根据Chrome版本选择对应的ChromeDriver版本
-        case $CHROME_VERSION in
-          138|137|136|135|134|133|132|131|130|129|128|127|126|125|124|123|122|121|120)
-            CHROMEDRIVER_VERSION="120.0.6099.109"
-            ;;
-          119)
-            CHROMEDRIVER_VERSION="119.0.6045.105"
-            ;;
-          118)
-            CHROMEDRIVER_VERSION="118.0.5993.70"
-            ;;
-          117)
-            CHROMEDRIVER_VERSION="117.0.5938.149"
-            ;;
-          116)
-            CHROMEDRIVER_VERSION="116.0.5845.96"
-            ;;
-          115)
-            CHROMEDRIVER_VERSION="115.0.5790.170"
-            ;;
-          114)
-            CHROMEDRIVER_VERSION="114.0.5735.90"
-            ;;
-          113)
-            CHROMEDRIVER_VERSION="113.0.5672.63"
-            ;;
-          112)
-            CHROMEDRIVER_VERSION="112.0.5615.49"
-            ;;
-          111)
-            CHROMEDRIVER_VERSION="111.0.5563.64"
-            ;;
-          110)
-            CHROMEDRIVER_VERSION="110.0.5481.77"
-            ;;
-          109)
-            CHROMEDRIVER_VERSION="109.0.5414.119"
-            ;;
-          108)
-            CHROMEDRIVER_VERSION="108.0.5359.71"
-            ;;
-          107)
-            CHROMEDRIVER_VERSION="107.0.5304.18"
-            ;;
-          106)
-            CHROMEDRIVER_VERSION="106.0.5249.61"
-            ;;
-          105)
-            CHROMEDRIVER_VERSION="105.0.5195.52"
-            ;;
-          104)
-            CHROMEDRIVER_VERSION="104.0.5112.79"
-            ;;
-          103)
-            CHROMEDRIVER_VERSION="103.0.5060.134"
-            ;;
-          102)
-            CHROMEDRIVER_VERSION="102.0.5005.61"
-            ;;
-          101)
-            CHROMEDRIVER_VERSION="101.0.4951.41"
-            ;;
-          100)
-            CHROMEDRIVER_VERSION="100.0.4896.75"
-            ;;
-          *)
-            # 对于其他版本，使用最新的稳定版本
-            CHROMEDRIVER_VERSION="120.0.6099.109"
-            ;;
-        esac
-        
-        echo "Selected ChromeDriver version: $CHROMEDRIVER_VERSION"
-        
-        # 尝试多个下载源
-        echo "Downloading ChromeDriver version: $CHROMEDRIVER_VERSION"
-        
-        # 尝试从Google官方下载
-        if wget -q "https://chromedriver.storage.googleapis.com/$CHROMEDRIVER_VERSION/chromedriver_linux64.zip" -O chromedriver.zip; then
-          echo "Downloaded from Google storage"
-        elif wget -q "https://github.com/GoogleChromeLabs/chrome-for-testing/releases/download/$CHROMEDRIVER_VERSION/chromedriver-linux64.zip" -O chromedriver.zip; then
-          echo "Downloaded from GitHub releases"
-        elif wget -q "https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/$CHROMEDRIVER_VERSION/linux64/chromedriver-linux64.zip" -O chromedriver.zip; then
-          echo "Downloaded from Google CDN"
+        # 首先尝试使用系统包管理器安装
+        echo "Trying to install ChromeDriver via package manager..."
+        if sudo apt-get install -y chromium-chromedriver; then
+          echo "Successfully installed ChromeDriver via package manager"
+          sudo ln -sf /usr/bin/chromium-chromedriver /usr/local/bin/chromedriver
         else
-          echo "All download sources failed, trying alternative version"
-          # 尝试备用版本
-          CHROMEDRIVER_VERSION="120.0.6099.109"
-          wget -q "https://chromedriver.storage.googleapis.com/$CHROMEDRIVER_VERSION/chromedriver_linux64.zip" -O chromedriver.zip || \
-          wget -q "https://github.com/GoogleChromeLabs/chrome-for-testing/releases/download/$CHROMEDRIVER_VERSION/chromedriver-linux64.zip" -O chromedriver.zip || \
-          wget -q "https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/$CHROMEDRIVER_VERSION/linux64/chromedriver-linux64.zip" -O chromedriver.zip
+          echo "Package manager installation failed, trying manual download..."
+          
+          # 根据Chrome版本选择对应的ChromeDriver版本
+          case $CHROME_VERSION in
+            138|137|136|135|134|133|132|131|130|129|128|127|126|125|124|123|122|121|120)
+              CHROMEDRIVER_VERSION="120.0.6099.109"
+              ;;
+            119)
+              CHROMEDRIVER_VERSION="119.0.6045.105"
+              ;;
+            118)
+              CHROMEDRIVER_VERSION="118.0.5993.70"
+              ;;
+            117)
+              CHROMEDRIVER_VERSION="117.0.5938.149"
+              ;;
+            116)
+              CHROMEDRIVER_VERSION="116.0.5845.96"
+              ;;
+            115)
+              CHROMEDRIVER_VERSION="115.0.5790.170"
+              ;;
+            114)
+              CHROMEDRIVER_VERSION="114.0.5735.90"
+              ;;
+            113)
+              CHROMEDRIVER_VERSION="113.0.5672.63"
+              ;;
+            112)
+              CHROMEDRIVER_VERSION="112.0.5615.49"
+              ;;
+            111)
+              CHROMEDRIVER_VERSION="111.0.5563.64"
+              ;;
+            110)
+              CHROMEDRIVER_VERSION="110.0.5481.77"
+              ;;
+            109)
+              CHROMEDRIVER_VERSION="109.0.5414.119"
+              ;;
+            108)
+              CHROMEDRIVER_VERSION="108.0.5359.71"
+              ;;
+            107)
+              CHROMEDRIVER_VERSION="107.0.5304.18"
+              ;;
+            106)
+              CHROMEDRIVER_VERSION="106.0.5249.61"
+              ;;
+            105)
+              CHROMEDRIVER_VERSION="105.0.5195.52"
+              ;;
+            104)
+              CHROMEDRIVER_VERSION="104.0.5112.79"
+              ;;
+            103)
+              CHROMEDRIVER_VERSION="103.0.5060.134"
+              ;;
+            102)
+              CHROMEDRIVER_VERSION="102.0.5005.61"
+              ;;
+            101)
+              CHROMEDRIVER_VERSION="101.0.4951.41"
+              ;;
+            100)
+              CHROMEDRIVER_VERSION="100.0.4896.75"
+              ;;
+            *)
+              # 对于其他版本，使用最新的稳定版本
+              CHROMEDRIVER_VERSION="120.0.6099.109"
+              ;;
+          esac
+          
+          echo "Selected ChromeDriver version: $CHROMEDRIVER_VERSION"
+          
+          # 尝试多个下载源
+          echo "Downloading ChromeDriver version: $CHROMEDRIVER_VERSION"
+          
+          # 清理之前的文件
+          rm -f chromedriver.zip
+          rm -f chromedriver
+          rm -f chromedriver-linux64/chromedriver
+          
+          # 尝试从Google官方下载
+          if wget -q "https://chromedriver.storage.googleapis.com/$CHROMEDRIVER_VERSION/chromedriver_linux64.zip" -O chromedriver.zip; then
+            echo "Downloaded from Google storage"
+          elif wget -q "https://github.com/GoogleChromeLabs/chrome-for-testing/releases/download/$CHROMEDRIVER_VERSION/chromedriver-linux64.zip" -O chromedriver.zip; then
+            echo "Downloaded from GitHub releases"
+          elif wget -q "https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/$CHROMEDRIVER_VERSION/linux64/chromedriver-linux64.zip" -O chromedriver.zip; then
+            echo "Downloaded from Google CDN"
+          else
+            echo "All download sources failed, trying alternative version"
+            # 尝试备用版本
+            CHROMEDRIVER_VERSION="120.0.6099.109"
+            wget -q "https://chromedriver.storage.googleapis.com/$CHROMEDRIVER_VERSION/chromedriver_linux64.zip" -O chromedriver.zip || \
+            wget -q "https://github.com/GoogleChromeLabs/chrome-for-testing/releases/download/$CHROMEDRIVER_VERSION/chromedriver-linux64.zip" -O chromedriver.zip || \
+            wget -q "https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/$CHROMEDRIVER_VERSION/linux64/chromedriver-linux64.zip" -O chromedriver.zip
+          fi
+          
+          # 检查下载是否成功
+          if [ ! -f chromedriver.zip ]; then
+            echo "Error: Failed to download ChromeDriver"
+            exit 1
+          fi
+          
+          echo "Download successful, file size: $(ls -lh chromedriver.zip | awk '{print $5}')"
+          
+          # 解压并安装
+          echo "Extracting ChromeDriver..."
+          unzip -q chromedriver.zip
+          
+          # 检查解压后的文件
+          echo "Checking extracted files:"
+          ls -la
+          
+          # 查找chromedriver文件
+          if [ -f "chromedriver" ]; then
+            echo "Found chromedriver in current directory"
+            sudo mv chromedriver /usr/local/bin/
+          elif [ -f "chromedriver-linux64/chromedriver" ]; then
+            echo "Found chromedriver in chromedriver-linux64 directory"
+            sudo mv chromedriver-linux64/chromedriver /usr/local/bin/
+          elif [ -f "chromedriver-linux64/chromedriver-linux64/chromedriver" ]; then
+            echo "Found chromedriver in nested directory"
+            sudo mv chromedriver-linux64/chromedriver-linux64/chromedriver /usr/local/bin/
+          else
+            echo "Error: Could not find chromedriver executable"
+            echo "Available files:"
+            find . -name "*chromedriver*" -type f
+            exit 1
+          fi
+          
+          sudo chmod +x /usr/local/bin/chromedriver
         fi
-        
-        # 解压并安装
-        unzip -q chromedriver.zip
-        sudo mv chromedriver /usr/local/bin/
-        sudo chmod +x /usr/local/bin/chromedriver
         
         # 验证安装
         echo "ChromeDriver version:"
