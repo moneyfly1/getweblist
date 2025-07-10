@@ -243,7 +243,9 @@ def _create_chromedriver_service_with_retry(max_retries=3):
                     driver_version = stable_versions[chrome_version]
                     logger.info(f"Chrome版本 {chrome_version}，使用ChromeDriver版本 {driver_version}")
                     from selenium.webdriver.chrome.service import Service
-                    return Service(ChromeDriverManager(version=driver_version, log_level=0).install())
+                    import os
+                    os.environ["WDM_CHROMEDRIVER_VERSION"] = driver_version
+                    return Service(ChromeDriverManager(log_level=0).install())
                 else:
                     logger.warning(f"Chrome版本 {chrome_version} 不在稳定版本映射中，尝试使用默认版本")
                     from selenium.webdriver.chrome.service import Service
@@ -252,7 +254,9 @@ def _create_chromedriver_service_with_retry(max_retries=3):
                 # 如果无法获取Chrome版本，使用已知稳定的版本
                 logger.info("无法获取Chrome版本，使用稳定版本120.0.6099.109")
                 from selenium.webdriver.chrome.service import Service
-                return Service(ChromeDriverManager(version="120.0.6099.109", log_level=0).install())
+                import os
+                os.environ["WDM_CHROMEDRIVER_VERSION"] = "120.0.6099.109"
+                return Service(ChromeDriverManager(log_level=0).install())
         except Exception as e:
             logger.warning(f"ChromeDriverManager安装失败 (尝试 {attempt + 1}/{max_retries}): {e}")
             if attempt < max_retries - 1:
