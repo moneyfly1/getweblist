@@ -329,7 +329,7 @@ jobs:
     - name: 添加并提交采集结果
       run: |
         git add src/database/sspanel_hosts/classifier/*.csv
-        git commit -m "自动采集: 更新最新csv结果 [skip ci]" || echo "No changes to commit"
+        git commit -m "自动采集: 更新最新csv结果 [skip ci]" --allow-empty
         git push
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
