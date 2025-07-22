@@ -225,7 +225,7 @@ class ProxyCollector:
         
         return self.proxies
     
-    def test_proxies(self, max_workers: int = 10, max_valid: int = 15) -> List[Dict]:
+    def test_proxies(self, max_workers: int = 10, max_valid: int = 5) -> List[Dict]:
         """测试所有代理的可用性，找到 max_valid 个有效代理后立即停止"""
         logger.info("开始测试代理可用性...")
         working_proxies = []
@@ -289,25 +289,42 @@ class ProxyCollector:
 def main():
     """主函数"""
     collector = ProxyCollector()
-    
-    # 搜集代理
-    proxies = collector.collect_proxies()
-    
+    # 先尝试从文件加载上次的代理
+    proxies = collector.load_proxies_from_file()
+    working_proxies = []
     if proxies:
-        # 测试代理
-        working_proxies = collector.test_proxies()
-        
-        if working_proxies:
-            # 保存可用代理
+        collector.proxies = proxies
+        # 测试上次的代理
+        working_proxies = collector.test_proxies(max_valid=5)
+        if len(working_proxies) >= 5:
+            collector.working_proxies = working_proxies[:5]
             collector.save_proxies_to_file()
-            
-            # 显示最佳代理
             best_proxy = collector.get_best_proxy()
             print(f"\n最佳代理: {best_proxy}")
-            
-            # 显示前5个最快代理
             print("\n前5个最快代理:")
             for i, proxy_info in enumerate(working_proxies[:5], 1):
+                print(f"{i}. {proxy_info['proxy']} (速度: {proxy_info['speed']:.2f}s)")
+            return
+        else:
+            print(f"上次代理可用数量不足5个，仅有{len(working_proxies)}个，继续搜集新代理...")
+    # 如果上次的代理不足5个可用，搜集新代理
+    collector.working_proxies = working_proxies  # 先加上已有的
+    proxies_new = collector.collect_proxies()
+    if proxies_new:
+        collector.proxies = list(set([p['proxy'] for p in working_proxies] + proxies_new))
+        # 测试新搜集的代理，补足到5个
+        more_needed = 5 - len(working_proxies)
+        if more_needed > 0:
+            new_working = collector.test_proxies(max_valid=more_needed)
+            collector.working_proxies = (working_proxies + new_working)[:5]
+        else:
+            collector.working_proxies = working_proxies[:5]
+        if collector.working_proxies:
+            collector.save_proxies_to_file()
+            best_proxy = collector.get_best_proxy()
+            print(f"\n最佳代理: {best_proxy}")
+            print("\n前5个最快代理:")
+            for i, proxy_info in enumerate(collector.working_proxies[:5], 1):
                 print(f"{i}. {proxy_info['proxy']} (速度: {proxy_info['speed']:.2f}s)")
         else:
             print("❌ 没有找到可用的代理")
