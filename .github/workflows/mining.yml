@@ -167,6 +167,8 @@ jobs:
     needs: test-chromedriver
     steps:
     - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # 拉取完整历史，避免rebase/push问题
     
     - name: Set up Python
       uses: actions/setup-python@v4
@@ -326,10 +328,14 @@ jobs:
       run: |
         git pull --rebase origin main
 
+    - name: 列出即将推送的csv文件
+      run: |
+        ls -l src/database/sspanel_hosts/classifier/
+        cat src/database/sspanel_hosts/classifier/*.csv || true
     - name: 添加并提交采集结果
       run: |
         git add src/database/sspanel_hosts/classifier/*.csv
         git commit -m "自动采集: 更新最新csv结果 [skip ci]" --allow-empty
-        git push
+        git push origin main
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
